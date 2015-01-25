@@ -41,7 +41,7 @@ class ITG3200:
     def DLPF(self, value):
         bus.write_byte_data(self.address,DLPF_FS, value)
         
-    def getRawData(self):
+    def getRawData(self): # prints out the raw data already 2's complemented
         X_DATA = self.getXData()
         Y_DATA = self.getYData()
         Z_DATA = self.getZData()
@@ -50,7 +50,7 @@ class ITG3200:
         print "y: ",Y_DATA
         print "z: ",Z_DATA
     
-    def getAngularVelocity(self):
+    def getAngularVelocity(self): # prints out the angular velocity
         X_DATA = self.getXData() * (1/14.375)
         Y_DATA = self.getYData() * (1/14.375)
         Z_DATA = self.getZData() * (1/14.375) #sensitivity 
@@ -59,7 +59,15 @@ class ITG3200:
         print "y: ",Y_DATA
         print "z: ",Z_DATA
         
-                    
+    def getAngularX(self): #returns angular velocity of X
+        return self.getXData() * (1/14.375)
+    
+    def getAngularY(self): #return angular velocity of Y
+        return self.getYData() * (1/14.375)
+
+    def getAngularZ(self): #return angular velocity of Z
+        return self.getZData() * (1/14.375)
+    
     def getXData(self): # data is returned in 16 bit 2's complement
         X_VALUE_H = bus.read_byte_data(self.address, GYRO_XOUT_H)
         X_VALUE_L = bus.read_byte_data(self.address,GYRO_XOUT_L)
