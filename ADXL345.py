@@ -33,7 +33,9 @@ MEASURE_VAL = 0x08
 class ADXL345:
 
     address = None
-
+    tempXData = None
+    tempYData = None
+    tempZData = None
     def __init__(self, address = 0x53)
         self.address = address
         self.dataFormat(4_G)# sets to full res with 4g range
@@ -44,5 +46,69 @@ class ADXL345:
 
         bus.write_byte_data(self.address, DATA_FORMAT, dataFormatByte)
 
-   def beginMeasure(self)
-       bus.write_byte_data(self.address, POWER_CTL, MEASURE_VAL)#being measure
+    def beginMeasure(self)
+        bus.write_byte_data(self.address, POWER_CTL, MEASURE_VAL)#being measure
+    def printRawData(self) #prints the raw data with 2's complement
+        X_DATA = self.getXData()
+        Y_DATA = self.getYData()
+        Z_DATA = self.getZData()
+        
+        print"Raw ADXL345 Data: "
+        print "x: ",X_DATA
+        print "y: ",Y_DATA
+        print "z: ",Z_DATA
+    def printData(self) # prints out the converted data
+        X_DATA = self.getXData() * 4_MG_LSB
+        Y_DATA = self.getYData() * 4_MG_LSB
+        Z_DATA = self.getZData() * 4_MG_LSB #sensitivity
+
+        print "ADXL345 Data (g)"
+        print "x: ",X_DATA
+        print "y: ",Y_DATA
+        print "z: ",Z_DATA
+    def getData(self) # gets raw data and converts and returns it in list format
+        data = []
+        data.append(self.getXData() * 4_MG_LSB)#x axis data
+        data.append(self.getYData() * 4_MG_LSB)#x axis data
+        data.append(self.getZData() * 4_MG_LSB)#x axis data
+
+        return data
+    def getXData(self)
+        try:
+            X_VALUE_L = bus.read_byte_data(self.address,DATAX0)
+            X_VALUE_H = bus.read_byte_data(self.address,DATAX1)
+            combinedData = (X_VALUE_H <<8) | X_VALUE_L
+            tempXData = combinedData
+        except:
+            combinedData = tempXData
+            
+        if(combinedData & (1<< (16 -1))) != 0: #if sign bit is '1'
+                combinedData = combinedData - (1<<16) #determine neg value
+
+        return combinedData
+    def getYData(self)
+        try:
+            Y_VALUE_L = bus.read_byte_data(self.address,DATAY0)
+            Y_VALUE_H = bus.read_byte_data(self.address,DATAY1)
+            combinedData = (Y_VALUE_H <<8) | Y_VALUE_L
+            tempYData = combinedData
+        except:
+            combinedData = tempYData
+            
+        if(combinedData & (1<< (16 -1))) != 0: #if sign bit is '1'
+                combinedData = combinedData - (1<<16) #determine neg value
+
+        return combinedData
+    def getZData(self)
+        try:
+            Z_VALUE_L = bus.read_byte_data(self.address,DATAZ0)
+            Z_VALUE_H = bus.read_byte_data(self.address,DATAZ1)
+            combinedData = (Z_VALUE_H <<8) | Z_VALUE_L
+            tempZData = combinedData
+        except:
+            combinedData = tempZData
+            
+        if(combinedData & (1<< (16 -1))) != 0: #if sign bit is '1'
+                combinedData = combinedData - (1<<16) #determine neg value
+
+        return combinedData
